@@ -7,7 +7,10 @@ edition = "2021"
 
 [[bin]]
 name = "01"
-path = "src/01/main.rs"
+path = "src/01.rs"
 
 [dependencies]
 itertools = "0.12.0"
+
+[profile.release]
+strip = "symbols"

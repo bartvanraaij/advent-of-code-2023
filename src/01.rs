@@ -3,7 +3,7 @@ use std::{env, fs};
 
 fn read_input_file(args: Args) -> String {
     let args_strings = args.collect::<Vec<String>>();
-    let default_input_filename = &String::from("input.txt");
+    let default_input_filename = &String::from("input/01");
     let input_filepath: &str = args_strings.get(1).unwrap_or(default_input_filename);
 
     fs::read_to_string(input_filepath).expect("input file should be readable")
