@@ -30,44 +30,42 @@ fn part_1(input: &str) -> u32 {
         .sum()
 }
 
-fn get_all_line_numbers(line: &str) -> Vec<u32> {
-    let mut numbers = Vec::new();
-
-    for i in 0..line.len() {
-        let char_at_index = line.chars().nth(i).unwrap();
-        match char_at_index.to_digit(10) {
-            Some(n) => numbers.push(n),
+fn get_all_line_digits(line: &str) -> Vec<u32> {
+    line.chars()
+        .enumerate()
+        .filter_map(|(i, char)| match char.to_digit(10) {
+            Some(n) => Some(n),
             None => {
                 if line[i..].starts_with("one") {
-                    numbers.push(1);
+                    Some(1)
                 } else if line[i..].starts_with("two") {
-                    numbers.push(2);
+                    Some(2)
                 } else if line[i..].starts_with("three") {
-                    numbers.push(3);
+                    Some(3)
                 } else if line[i..].starts_with("four") {
-                    numbers.push(4);
+                    Some(4)
                 } else if line[i..].starts_with("five") {
-                    numbers.push(5);
+                    Some(5)
                 } else if line[i..].starts_with("six") {
-                    numbers.push(6);
+                    Some(6)
                 } else if line[i..].starts_with("seven") {
-                    numbers.push(7);
+                    Some(7)
                 } else if line[i..].starts_with("eight") {
-                    numbers.push(8);
+                    Some(8)
                 } else if line[i..].starts_with("nine") {
-                    numbers.push(9);
+                    Some(9)
+                } else {
+                    None
                 }
             }
-        }
-    }
-
-    numbers
+        })
+        .collect::<Vec<u32>>()
 }
 
 fn part_2(input: &str) -> u32 {
     input
         .split("\n")
-        .map(|line| get_all_line_numbers(line))
+        .map(|line| get_all_line_digits(line))
         .map(|digits| digits.first().unwrap_or(&0) * 10 + digits.last().unwrap_or(&0))
         .sum()
 }
@@ -76,18 +74,22 @@ fn part_2(input: &str) -> u32 {
 mod tests {
     use super::*;
 
-    const PART_1_SAMPLE_DATA: &str = "1abc2
+    const PART_1_SAMPLE_DATA: &str = r#"
+1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
-treb7uchet";
+treb7uchet
+"#;
 
-    const PART_2_SAMPLE_DATA: &str = "two1nine
+    const PART_2_SAMPLE_DATA: &str = r#"
+two1nine
 eightwothree
 abcone2threexyz
 xtwone3four
 4nineeightseven2
 zoneight234
-7pqrstsixteen";
+7pqrstsixteen
+"#;
 
     #[test]
     fn test_part_1() {
