@@ -6,9 +6,7 @@ fn read_input_file(args: Args) -> String {
     let default_input_filename = &String::from("input.txt");
     let input_filepath: &str = args_strings.get(1).unwrap_or(default_input_filename);
 
-    let input = fs::read_to_string(input_filepath).expect("input file should be readable");
-
-    input
+    fs::read_to_string(input_filepath).expect("input file should be readable")
 }
 
 fn main() {
@@ -21,27 +19,15 @@ fn main() {
 }
 
 fn part_1(input: &str) -> u32 {
-    let lines = input.split("\n").collect::<Vec<&str>>();
-
-    let mut total_sum = 0;
-
-    for line in lines {
-        let numbers = line
-            .chars()
-            .filter_map(|char| if char.is_digit(10) { Some(char) } else { None })
-            .collect::<Vec<char>>();
-
-        let first_digit = numbers.first().unwrap_or(&'0');
-        let last_digit = numbers.last().unwrap_or(&'0');
-
-        let calibration_value = format!("{}{}", first_digit, last_digit)
-            .parse::<u32>()
-            .unwrap_or(0);
-
-        total_sum += calibration_value;
-    }
-
-    total_sum
+    input
+        .split("\n")
+        .map(|line| {
+            line.chars()
+                .filter_map(|char| char.to_digit(10))
+                .collect::<Vec<u32>>()
+        })
+        .map(|digits| digits.first().unwrap_or(&0) * 10 + digits.last().unwrap_or(&0))
+        .sum()
 }
 
 fn get_all_line_numbers(line: &str) -> Vec<u32> {
@@ -79,23 +65,11 @@ fn get_all_line_numbers(line: &str) -> Vec<u32> {
 }
 
 fn part_2(input: &str) -> u32 {
-    let lines = input.split("\n").collect::<Vec<&str>>();
-
-    let mut total_sum = 0;
-
-    for line in lines {
-        let numbers = get_all_line_numbers(line);
-        let first_digit = numbers.first().unwrap_or(&0);
-        let last_digit = numbers.last().unwrap_or(&0);
-
-        let calibration_value = format!("{}{}", first_digit, last_digit)
-            .parse::<u32>()
-            .unwrap_or(0);
-
-        total_sum += calibration_value;
-    }
-
-    total_sum
+    input
+        .split("\n")
+        .map(|line| get_all_line_numbers(line))
+        .map(|digits| digits.first().unwrap_or(&0) * 10 + digits.last().unwrap_or(&0))
+        .sum()
 }
 
 #[cfg(test)]
