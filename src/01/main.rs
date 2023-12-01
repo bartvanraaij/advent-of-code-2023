@@ -97,3 +97,31 @@ fn part_2(input: &str) -> u32 {
 
     total_sum
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const PART_1_SAMPLE_DATA: &str = "1abc2
+pqr3stu8vwx
+a1b2c3d4e5f
+treb7uchet";
+
+    const PART_2_SAMPLE_DATA: &str = "two1nine
+eightwothree
+abcone2threexyz
+xtwone3four
+4nineeightseven2
+zoneight234
+7pqrstsixteen";
+
+    #[test]
+    fn test_part_1() {
+        assert_eq!(part_1(PART_1_SAMPLE_DATA), 142);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(PART_2_SAMPLE_DATA), 281);
+    }
+}
