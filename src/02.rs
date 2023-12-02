@@ -1,5 +1,4 @@
 use regex::Regex;
-use std::cell::Cell;
 use std::{env, fs};
 
 fn read_input_file(args: Vec<String>) -> String {
@@ -20,67 +19,39 @@ fn main() {
 #[derive(Debug)]
 struct Game {
     id: u32,
-    red: Cell<u32>,
-    green: Cell<u32>,
-    blue: Cell<u32>,
+    red: u32,
+    green: u32,
+    blue: u32,
 }
 
-impl Game {
-    fn new(id: u32) -> Game {
-        Game {
-            id,
-            red: Into::into(0),
-            green: Into::into(0),
-            blue: Into::into(0),
-        }
-    }
-
-    fn set_max(&self, amount: u32, colour: &str) {
-        if colour == "red" {
-            if self.red.get() < amount {
-                self.red.set(amount);
-            }
-        }
-        if colour == "green" {
-            if self.green.get() < amount {
-                self.green.set(amount);
-            }
-        }
-        if colour == "blue" {
-            if self.blue.get() < amount {
-                self.blue.set(amount);
-            }
-        }
-    }
-
-    fn pow(&self) -> u32 {
-        self.red.get() * self.green.get() * self.blue.get()
-    }
+struct RGB {
+    r: u32,
+    g: u32,
+    b: u32,
 }
 
 fn parse_games(input: &str) -> Vec<Game> {
+    let game_id_regex = Regex::new(r"Game (?<game_id>\d+): ").unwrap();
+    let cube_counts_regex = Regex::new(r"(?<amount>\d+) (?<colour>(red|green|blue))").unwrap();
+
     input
         .split("\n")
         .filter(|l| !l.is_empty())
         .map(|line| {
-            let re = Regex::new(r"Game (?<game_id>\d+): ").unwrap();
-            let caps = re.captures(line).unwrap();
+            let caps = game_id_regex.captures(line).unwrap();
             let game_id = caps
                 .name("game_id")
                 .unwrap()
                 .as_str()
                 .parse::<u32>()
                 .unwrap();
-            let game_str = re.replace(line, "");
 
-            let game = Game::new(game_id);
-            game_str
-                .split(";")
+            let mut rgb = RGB { r: 0, g: 0, b:0 };
+            line.split(";")
                 .map(|line| line.trim())
                 .flat_map(|line| {
-                    let parts = line.split(", ").filter(|l| !l.is_empty()).map(|part| {
-                        let re = Regex::new(r"(?<amount>\d+) (?<colour>(red|green|blue))").unwrap();
-                        let caps = re.captures(part).unwrap();
+                    line.split(", ").filter(|l| !l.is_empty()).map(|part| {
+                        let caps = cube_counts_regex.captures(part).unwrap();
                         let amount = caps
                             .name("amount")
                             .unwrap()
@@ -91,15 +62,26 @@ fn parse_games(input: &str) -> Vec<Game> {
                         let colour = caps.name("colour").unwrap().as_str();
 
                         (colour, amount)
-                    });
-
-                    parts
+                    })
                 })
                 .for_each(|(colour, amount)| {
-                    game.set_max(amount, colour);
+                    if colour == "red" && amount > rgb.r {
+                        rgb.r = amount
+                    };
+                    if colour == "green" && amount > rgb.g {
+                        rgb.g = amount
+                    };
+                    if colour == "blue" && amount > rgb.b {
+                        rgb.b = amount
+                    };
                 });
 
-            game
+            Game {
+                id: game_id,
+                red: rgb.r,
+                green: rgb.g,
+                blue: rgb.b,
+            }
         })
         .collect()
 }
@@ -107,13 +89,16 @@ fn parse_games(input: &str) -> Vec<Game> {
 fn part_1(input: &str) -> u32 {
     parse_games(input)
         .iter()
-        .filter(|game| game.red.get() <= 12 && game.green.get() <= 13 && game.blue.get() <= 14)
+        .filter(|game| game.red <= 12 && game.green <= 13 && game.blue <= 14)
         .map(|game| game.id)
         .sum()
 }
 
 fn part_2(input: &str) -> u32 {
-    parse_games(input).iter().map(|game| game.pow()).sum()
+    parse_games(input)
+        .iter()
+        .map(|game| game.red * game.green * game.blue)
+        .sum()
 }
 
 #[cfg(test)]
