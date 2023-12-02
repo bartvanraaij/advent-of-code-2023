@@ -1,17 +1,15 @@
 use regex::Regex;
 use std::cell::Cell;
-use std::env::Args;
 use std::{env, fs};
 
-fn read_input_file(args: Args) -> String {
-    let args_strings = args.collect::<Vec<String>>();
+fn read_input_file(args: Vec<String>) -> String {
     let default_input_filename = &String::from("input/02");
-    let input_filepath: &str = args_strings.get(1).unwrap_or(default_input_filename);
+    let input_filepath: &str = args.get(1).unwrap_or(default_input_filename);
     fs::read_to_string(input_filepath).expect("input file should be readable")
 }
 
 fn main() {
-    let input = read_input_file(env::args());
+    let input = read_input_file(env::args().collect());
     let result_part_1 = part_1(&input);
     println!("{:?}", result_part_1);
 
