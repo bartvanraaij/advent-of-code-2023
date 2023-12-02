@@ -30,7 +30,7 @@ struct Game {
 impl Game {
     fn new(id: u32) -> Game {
         Game {
-            id: id,
+            id,
             red: Into::into(0),
             green: Into::into(0),
             blue: Into::into(0),
@@ -38,27 +38,30 @@ impl Game {
     }
 
     fn set_max(&self, amount: u32, colour: &str) {
-        //self.y.set(self.y.get() + 1);
         if colour == "red" {
-            if (self.red.get() < amount) {
+            if self.red.get() < amount {
                 self.red.set(amount);
             }
         }
         if colour == "green" {
-            if (self.green.get() < amount) {
+            if self.green.get() < amount {
                 self.green.set(amount);
             }
         }
         if colour == "blue" {
-            if (self.blue.get() < amount) {
+            if self.blue.get() < amount {
                 self.blue.set(amount);
             }
         }
     }
+
+    fn pow(&self) -> u32 {
+        self.red.get() * self.green.get() * self.blue.get()
+    }
 }
 
-fn part_1(input: &str) -> u32 {
-    let games = input
+fn parse_games(input: &str) -> Vec<Game> {
+    input
         .split("\n")
         .filter(|l| !l.is_empty())
         .map(|line| {
@@ -91,7 +94,6 @@ fn part_1(input: &str) -> u32 {
 
                         (colour, amount)
                     });
-                    //.collect::<Vec<(&str, u32)>>();
 
                     parts
                 })
@@ -101,27 +103,19 @@ fn part_1(input: &str) -> u32 {
 
             game
         })
-        .collect::<Vec<Game>>();
+        .collect()
+}
 
-    dbg!(&games);
-
-    let applicable_games_sum: u32 = games.into_iter().filter(|game| 
-        game.red.get() <= 12 && game.green.get() <= 13 && game.blue.get() <=14
-    ).map(|game| {
-        game.id
-    }).sum();
-
-    dbg!(applicable_games_sum);
-    /*  .map(|line| {
-        line.
-    })
-    .map(|digits| digits.first().unwrap_or(&0) * 10 + digits.last().unwrap_or(&0))
-    .sum()*/
-    applicable_games_sum
+fn part_1(input: &str) -> u32 {
+    parse_games(input)
+        .iter()
+        .filter(|game| game.red.get() <= 12 && game.green.get() <= 13 && game.blue.get() <= 14)
+        .map(|game| game.id)
+        .sum()
 }
 
 fn part_2(input: &str) -> u32 {
-    0
+    parse_games(input).iter().map(|game| game.pow()).sum()
 }
 
 #[cfg(test)]
@@ -143,6 +137,6 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(SAMPLE_DATA), 0);
+        assert_eq!(part_2(SAMPLE_DATA), 2286);
     }
 }
