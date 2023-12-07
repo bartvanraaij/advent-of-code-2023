@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::{env, fs};
 
@@ -38,16 +39,133 @@ fn part_1(input: &str) -> u32 {
 
                     match num_wins {
                         0 => 0,
-                        1 => 1,
                         _ => 2_u32.pow((num_wins as u32) - 1),
                     }
-                }).exactly_one().unwrap()
+                })
+                .exactly_one()
+                .unwrap()
         })
         .sum()
 }
 
+#[derive(Debug)]
+struct Card {
+    number: u32,
+    winning: HashSet<u32>,
+    ours: HashSet<u32>,
+    multiplier: u32,
+}
+
+impl Card {
+    fn new(number: u32, winning: &HashSet<u32>, ours: &HashSet<u32>) -> Card {
+        Card {
+            number,
+            winning: winning.clone(),
+            ours: ours.clone(),
+            multiplier: 1,
+        }
+    }
+
+    fn score(&self) -> u32 {
+        self.winning
+            .intersection(&self.ours)
+            .collect::<Vec<_>>()
+            .len() as u32
+        /* dbg!(num_wins);
+        match num_wins {
+            0 => 0,
+            _ => 2_u32.pow((num_wins as u32) - 1),
+        }*/
+    }
+
+    fn up(&mut self) {
+        self.multiplier = self.multiplier + 1;
+    }
+}
+
+struct Game {
+    cards: HashMap<u32, Card>,
+    multipliers: HashMap<u32, u32>,
+}
+
+impl Game {
+    fn new(cards: HashMap<u32, Card>) -> Game {
+        let mp = &cards
+            .iter()
+            .map(|(i, _)| (*i, 1 as u32))
+            .collect::<HashMap<_, _>>();
+        Game {
+            cards,
+            multipliers: mp.clone(),
+        }
+    }
+
+    fn num_cards(&self) -> u32 {
+        self.cards.len() as u32
+    }
+
+    fn get_card(&self, num: u32) -> Option<&Card> {
+        self.cards.get(&num)
+    }
+
+    fn up_card(&mut self, num: u32) {
+        *self.multipliers.entry(num).or_insert(0) += 10;
+    }
+}
+
 fn part_2(input: &str) -> u32 {
-    0
+    let cards = input
+        .split("\n")
+        .filter(|l| !l.is_empty())
+        .enumerate()
+        .map(|(i, l)| {
+            let numbers_str = l.split(":").nth(1).unwrap();
+            let numbers_vecs = numbers_str
+                .split("|")
+                .map(|p| {
+                    p.trim()
+                        .split(" ")
+                        .flat_map(|s| s.parse::<u32>())
+                        .collect::<HashSet<u32>>()
+                })
+                .collect::<Vec<_>>();
+
+            return (
+                (i as u32 + 1),
+                Card::new(
+                    i as u32 + 1,
+                    numbers_vecs.get(0).unwrap(),
+                    numbers_vecs.get(1).unwrap(),
+                ),
+            );
+        })
+        .collect::<HashMap<u32, Card>>();
+
+
+    let mut multipliers = cards
+        .iter()
+        .map(|(i, _)| (*i, 1 as u32))
+        .collect::<HashMap<_, _>>();
+
+    let game = Game::new(cards);
+
+    for card_num in 1..game.num_cards() {
+        let card = game.get_card(card_num).unwrap();
+        let this_card_mp = *multipliers.get(&card_num).unwrap();
+
+        for win in 1..=(card.score()) {
+                let cd = card.number;
+                let card_to_up_num = &cd + win;
+
+
+                multipliers.entry(card_to_up_num).and_modify(|n| *n += this_card_mp);
+
+            }
+    }
+
+    let s: u32 = multipliers.values().sum::<u32>();
+
+    s
 }
 
 #[cfg(test)]
@@ -70,6 +188,6 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(SAMPLE_DATA), 0);
+        assert_eq!(part_2(SAMPLE_DATA), 30);
     }
 }
