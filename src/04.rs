@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::collections::HashSet;
 use std::{env, fs};
 
@@ -22,27 +23,25 @@ fn part_1(input: &str) -> u32 {
         .filter(|l| !l.is_empty())
         .map(|l| l.split(":").nth(1).unwrap())
         .map(|l| {
-            let lists = l
-                .split("|")
+            l.split("|")
                 .map(|p| {
                     p.trim()
                         .split(" ")
                         .flat_map(|s| s.parse::<u32>())
                         .collect::<HashSet<u32>>()
                 })
-                .collect::<Vec<_>>();
-            let winning_numbers = lists.get(0).unwrap();
-            let our_numbers = lists.get(1).unwrap();
+                .collect::<Vec<_>>()
+                .chunks(2)
+                .map(|c| {
+                    let intersect = &c[0].intersection(&c[1]).collect::<Vec<_>>();
+                    let num_wins = intersect.len();
 
-            let intersect = winning_numbers.intersection(&our_numbers).collect::<Vec<_>>();
-
-            let num_wins = intersect.len();
-
-            match num_wins {
-                0 => 0,
-                1 => 1,
-                _ => 2_u32.pow((num_wins as u32)-1)
-            }
+                    match num_wins {
+                        0 => 0,
+                        1 => 1,
+                        _ => 2_u32.pow((num_wins as u32) - 1),
+                    }
+                }).exactly_one().unwrap()
         })
         .sum()
 }
