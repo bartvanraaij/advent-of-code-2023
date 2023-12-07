@@ -53,7 +53,6 @@ struct Card {
     number: u32,
     winning: HashSet<u32>,
     ours: HashSet<u32>,
-    multiplier: u32,
 }
 
 impl Card {
@@ -62,7 +61,6 @@ impl Card {
             number,
             winning: winning.clone(),
             ours: ours.clone(),
-            multiplier: 1,
         }
     }
 
@@ -71,45 +69,6 @@ impl Card {
             .intersection(&self.ours)
             .collect::<Vec<_>>()
             .len() as u32
-        /* dbg!(num_wins);
-        match num_wins {
-            0 => 0,
-            _ => 2_u32.pow((num_wins as u32) - 1),
-        }*/
-    }
-
-    fn up(&mut self) {
-        self.multiplier = self.multiplier + 1;
-    }
-}
-
-struct Game {
-    cards: HashMap<u32, Card>,
-    multipliers: HashMap<u32, u32>,
-}
-
-impl Game {
-    fn new(cards: HashMap<u32, Card>) -> Game {
-        let mp = &cards
-            .iter()
-            .map(|(i, _)| (*i, 1 as u32))
-            .collect::<HashMap<_, _>>();
-        Game {
-            cards,
-            multipliers: mp.clone(),
-        }
-    }
-
-    fn num_cards(&self) -> u32 {
-        self.cards.len() as u32
-    }
-
-    fn get_card(&self, num: u32) -> Option<&Card> {
-        self.cards.get(&num)
-    }
-
-    fn up_card(&mut self, num: u32) {
-        *self.multipliers.entry(num).or_insert(0) += 10;
     }
 }
 
@@ -141,26 +100,21 @@ fn part_2(input: &str) -> u32 {
         })
         .collect::<HashMap<u32, Card>>();
 
-
     let mut multipliers = cards
         .iter()
         .map(|(i, _)| (*i, 1 as u32))
         .collect::<HashMap<_, _>>();
 
-    let game = Game::new(cards);
-
-    for card_num in 1..game.num_cards() {
-        let card = game.get_card(card_num).unwrap();
-        let this_card_mp = *multipliers.get(&card_num).unwrap();
+    for card_num in 1..cards.len() {
+        let card = cards.get(&(card_num as u32)).unwrap();
+        let this_card_mp = *multipliers.get(&(card_num as u32)).unwrap();
 
         for win in 1..=(card.score()) {
-                let cd = card.number;
-                let card_to_up_num = &cd + win;
-
-
-                multipliers.entry(card_to_up_num).and_modify(|n| *n += this_card_mp);
-
-            }
+            let card_to_up_num = &card.number + win;
+            multipliers
+                .entry(card_to_up_num)
+                .and_modify(|n| *n += this_card_mp);
+        }
     }
 
     let s: u32 = multipliers.values().sum::<u32>();
