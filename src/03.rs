@@ -46,21 +46,17 @@ impl XY {
         XY(self.0 + 1, self.1 + 1)
     }
     fn surround(self) -> Vec<XY> {
-        let mut vec = Vec::from([
-            self.right(),
-            self.bottom_right(),
-            self.bottom(),
-        ]);
+        let mut vec = Vec::from([self.right(), self.bottom_right(), self.bottom()]);
         if self.0 > 0 {
-            vec.push(self.left());
             vec.push(self.bottom_left());
+            vec.push(self.left());
+        }
+        if self.0 > 0 && self.1 > 0 {
+            vec.push(self.top_left());
         }
         if self.1 > 0 {
             vec.push(self.top());
             vec.push(self.top_right());
-        }
-        if self.0 > 0 && self.1 > 0 {
-            vec.push(self.top_left());
         }
         vec
     }
@@ -68,8 +64,14 @@ impl XY {
 
 #[derive(Debug, Clone)]
 struct Symbol {
-    char: String,
+    char: char,
     pos: XY,
+}
+
+impl Symbol {
+    fn surrounding_positions(&self) -> Vec<XY> {
+        self.pos.surround()
+    }
 }
 
 #[derive(Debug)]
@@ -106,6 +108,17 @@ struct Schematic {
     numbers: HashMap<XY, Number>,
 }
 
+impl Schematic {
+    fn numbers_all_positions(&self) -> HashMap<XY, &Number> {
+        self.numbers
+            .values()
+            .flat_map(|num| {
+                num.positions().into_iter().map(move |pos| (pos, num))
+            })
+            .collect::<HashMap<_, _>>()
+    }
+}
+
 fn parse_input(input: &str) -> Schematic {
     let symbols = input
         .split("\n")
@@ -118,13 +131,7 @@ fn parse_input(input: &str) -> Schematic {
                 .filter(|(_, char)| !char.is_numeric() && &char.to_string() != ".")
                 .map(move |(x, char)| {
                     let xy = XY(x.try_into().unwrap(), y.try_into().unwrap());
-                    (
-                        xy,
-                        Symbol {
-                            char: char.to_string(),
-                            pos: xy,
-                        },
-                    )
+                    (xy, Symbol { char, pos: xy })
                 });
         })
         .collect::<HashMap<_, _>>();
@@ -170,26 +177,21 @@ fn parse_input(input: &str) -> Schematic {
         .collect::<HashMap<_, _>>();
 
     return Schematic { symbols, numbers };
-
-    /*for (y, line) in lines.iter().enumerate() {
-        dbg!(y);
-        dbg!(line);
-        for
-    }*/
 }
 
 fn part_1(input: &str) -> u32 {
     let schematic = parse_input(input);
-    
-    schematic.numbers
+
+    schematic
+        .numbers
         .values()
         .filter_map(|num| {
-            let is_clear = num
+            let has_adjacent_symbol = num
                 .surrounding_positions()
                 .into_iter()
                 .any(|pos| schematic.symbols.contains_key(&pos));
 
-            if is_clear {
+            if has_adjacent_symbol {
                 Some(num.number)
             } else {
                 None
@@ -199,7 +201,31 @@ fn part_1(input: &str) -> u32 {
 }
 
 fn part_2(input: &str) -> u32 {
-    0
+    let schematic = parse_input(input);
+
+    let numbers_all_positions = schematic.numbers_all_positions();
+    schematic
+        .symbols
+        .values()
+        .filter(|sym| sym.char == '*')
+        .filter_map(|sym| {
+            let adjacent_numbers = sym
+                .surrounding_positions()
+                .into_iter()
+                .filter_map(|pos| numbers_all_positions.get(&pos))
+                .dedup_by(|a, b| a.pos == b.pos && a.number == b.number)
+                .map(|n| n.number)
+                .collect::<Vec<u32>>();
+
+            if adjacent_numbers.len() == 2 {
+                let product = adjacent_numbers.iter().product::<u32>();
+                return Some(product);
+            }
+
+            return None;
+        })
+        .sum()
+
 }
 
 #[cfg(test)]
