@@ -1,5 +1,4 @@
 use itertools::Itertools;
-use std::collections::HashMap;
 use std::collections::HashSet;
 use std::{env, fs};
 
@@ -89,37 +88,28 @@ fn part_2(input: &str) -> u32 {
                 })
                 .collect::<Vec<_>>();
 
-            return (
-                (i as u32 + 1),
-                Card::new(
-                    i as u32 + 1,
-                    numbers_vecs.get(0).unwrap(),
-                    numbers_vecs.get(1).unwrap(),
-                ),
+            return Card::new(
+                i as u32 + 1,
+                numbers_vecs.get(0).unwrap(),
+                numbers_vecs.get(1).unwrap(),
             );
         })
-        .collect::<HashMap<u32, Card>>();
+        .collect::<Vec<Card>>();
 
-    let mut multipliers = cards
-        .iter()
-        .map(|(i, _)| (*i, 1 as u32))
-        .collect::<HashMap<_, _>>();
+    let num_cards: usize = cards.len();
+    let mut multipliers = vec![1; num_cards];
 
-    for card_num in 1..cards.len() {
-        let card = cards.get(&(card_num as u32)).unwrap();
-        let this_card_mp = *multipliers.get(&(card_num as u32)).unwrap();
+    for card in cards {
+        let card_idx = card.number - 1;
+        let this_card_mp = multipliers[card_idx as usize];
 
         for win in 1..=(card.score()) {
-            let card_to_up_num = &card.number + win;
-            multipliers
-                .entry(card_to_up_num)
-                .and_modify(|n| *n += this_card_mp);
+            let card_to_up_num = card_idx + win;
+            multipliers[card_to_up_num as usize] += this_card_mp;
         }
     }
 
-    let s: u32 = multipliers.values().sum::<u32>();
-
-    s
+    multipliers.into_iter().sum::<u32>()
 }
 
 #[cfg(test)]
