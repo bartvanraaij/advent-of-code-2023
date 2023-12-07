@@ -112,9 +112,7 @@ impl Schematic {
     fn numbers_all_positions(&self) -> HashMap<XY, &Number> {
         self.numbers
             .values()
-            .flat_map(|num| {
-                num.positions().into_iter().map(move |pos| (pos, num))
-            })
+            .flat_map(|num| num.positions().into_iter().map(move |pos| (pos, num)))
             .collect::<HashMap<_, _>>()
     }
 }
@@ -225,7 +223,6 @@ fn part_2(input: &str) -> u32 {
             return None;
         })
         .sum()
-
 }
 
 #[cfg(test)]
