@@ -90,8 +90,8 @@ fn part_2(input: &str) -> u32 {
 
             return Card::new(
                 i as u32 + 1,
-                numbers_vecs.get(0).unwrap(),
-                numbers_vecs.get(1).unwrap(),
+                &numbers_vecs[0],
+                &numbers_vecs[1],
             );
         })
         .collect::<Vec<Card>>();
