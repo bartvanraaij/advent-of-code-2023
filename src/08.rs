@@ -1,6 +1,6 @@
+use num::integer::lcm;
 use std::collections::HashMap;
 use std::{env, fs};
-use num::integer::lcm;
 
 fn read_input_file(args: Vec<String>) -> String {
     let default_input_filename = &String::from("input/08");
@@ -116,13 +116,12 @@ fn part_2(input: &str) -> u64 {
         }
 
         steps.push(step);
-        
     }
 
-    steps.into_iter().reduce(|acc, curr| {
-        lcm(acc,curr)
-
-    }).unwrap()
+    steps
+        .into_iter()
+        .reduce(|acc, curr| lcm(acc, curr))
+        .unwrap()
 }
 
 #[cfg(test)]
