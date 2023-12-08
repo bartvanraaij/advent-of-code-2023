@@ -1,5 +1,5 @@
-fn input_data_1() -> Vec<Race> {
-    Vec::from([
+fn main() {
+    const INPUT_DATA_1: [Race; 4] = [
         Race {
             time: 34.0,
             distance: 204.0,
@@ -16,21 +16,17 @@ fn input_data_1() -> Vec<Race> {
             time: 86.0,
             distance: 1780.0,
         },
-    ])
-}
+    ];
 
-fn input_data_2() -> Race {
-    Race {
-        time: 34908986.0,
-        distance: 204171312101780.0,
-    }
-}
-
-fn main() {
-    let result_part_1 = part_1(input_data_1());
+    let result_part_1 = part_1(Vec::from(INPUT_DATA_1));
     println!("{:?}", result_part_1);
 
-    let result_part_2 = part_2(input_data_2());
+    const INPUT_DATA_2: Race = Race {
+        time: 34908986.0,
+        distance: 204171312101780.0,
+    };
+
+    let result_part_2 = part_2(INPUT_DATA_2);
     println!("{:?}", result_part_2);
 }
 
@@ -63,37 +59,33 @@ fn part_2(input: Race) -> u32 {
 mod tests_06 {
     use super::*;
 
-    fn sample_data_1() -> Vec<Race> {
-        Vec::from([
-            Race {
-                time: 7.0,
-                distance: 9.0,
-            },
-            Race {
-                time: 15.0,
-                distance: 40.0,
-            },
-            Race {
-                time: 30.0,
-                distance: 200.0,
-            },
-        ])
-    }
-
-    fn sample_data_2() -> Race {
+    const SAMPLE_DATA: [Race; 3] = [
         Race {
-            time: 71530.0,
-            distance: 940200.0,
-        }
-    }
+            time: 7.0,
+            distance: 9.0,
+        },
+        Race {
+            time: 15.0,
+            distance: 40.0,
+        },
+        Race {
+            time: 30.0,
+            distance: 200.0,
+        },
+    ];
+
+    const SAMPLE_DATA_2: Race = Race {
+        time: 71530.0,
+        distance: 940200.0,
+    };
 
     #[test]
     fn test_part_1() {
-        assert_eq!(part_1(sample_data_1()), 288);
+        assert_eq!(part_1(Vec::from(SAMPLE_DATA)), 288);
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(sample_data_2()), 71503);
+        assert_eq!(part_2(SAMPLE_DATA_2), 71503);
     }
 }
