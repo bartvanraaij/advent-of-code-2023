@@ -1,4 +1,4 @@
-fn input_data() -> Vec<Race> {
+fn input_data_1() -> Vec<Race> {
     Vec::from([
         Race {
             time: 34.0,
@@ -19,47 +19,51 @@ fn input_data() -> Vec<Race> {
     ])
 }
 
+fn input_data_2() -> Race {
+    Race {
+        time: 34908986.0,
+        distance: 204171312101780.0,
+    }
+}
+
 fn main() {
-    let result_part_1 = part_1(input_data());
+    let result_part_1 = part_1(input_data_1());
     println!("{:?}", result_part_1);
 
-    let result_part_2 = part_2(input_data());
+    let result_part_2 = part_2(input_data_2());
     println!("{:?}", result_part_2);
 }
 
 struct Race {
-    time: f32,
-    distance: f32,
+    time: f64,
+    distance: f64,
 }
 
-impl Race {
-    fn num_record_breaking_ways(&self) -> u32 {
-        let lower_bound = (self.time - (self.time.powi(2) - (self.distance * 4.0)).sqrt()) / 2.0;
-        let upper_bound = (self.time + (self.time.powi(2) - (self.distance * 4.0)).sqrt()) / 2.0;
+fn calc_num_record_breaking_ways(time: f64, distance: f64) -> u32 {
+    let lower_bound = (time - (time.powi(2) - (distance * 4.0)).sqrt()) / 2.0;
+    let upper_bound = (time + (time.powi(2) - (distance * 4.0)).sqrt()) / 2.0;
 
-        let x = upper_bound.ceil() - lower_bound.floor() - 1.0;
+    let x = upper_bound.ceil() - lower_bound.floor() - 1.0;
 
-
-        x as u32
-    }
+    x as u32
 }
 
 fn part_1(input: Vec<Race>) -> u32 {
     input
         .into_iter()
-        .map(|race| race.num_record_breaking_ways())
+        .map(|race| calc_num_record_breaking_ways(race.time, race.distance))
         .product::<u32>()
 }
 
-fn part_2(input: Vec<Race>) -> u32 {
-    0
+fn part_2(input: Race) -> u32 {
+    calc_num_record_breaking_ways(input.time, input.distance)
 }
 
 #[cfg(test)]
 mod tests_06 {
     use super::*;
 
-    fn sample_data() -> Vec<Race> {
+    fn sample_data_1() -> Vec<Race> {
         Vec::from([
             Race {
                 time: 7.0,
@@ -76,13 +80,20 @@ mod tests_06 {
         ])
     }
 
+    fn sample_data_2() -> Race {
+        Race {
+            time: 71530.0,
+            distance: 940200.0,
+        }
+    }
+
     #[test]
     fn test_part_1() {
-        assert_eq!(part_1(sample_data()), 288);
+        assert_eq!(part_1(sample_data_1()), 288);
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(sample_data()), 0);
+        assert_eq!(part_2(sample_data_2()), 71503);
     }
 }
