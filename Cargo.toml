@@ -26,6 +26,7 @@ name = "05"
 path = "src/05.rs"
 
 [dependencies]
+indicatif = "0.17.7"
 itertools = "0.12.0"
 regex = "1.10.2"
 

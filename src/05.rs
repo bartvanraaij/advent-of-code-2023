@@ -1,3 +1,4 @@
+use indicatif::{ProgressBar, ProgressStyle};
 use itertools::Itertools;
 use std::{env, fs};
 
@@ -23,20 +24,6 @@ struct SrcDestSet {
     len: usize,
 }
 
-impl SrcDestSet {
-    fn new(src: usize, dest: usize, len: usize) -> Self {
-        Self { src, dest, len }
-    }
-
-    fn map(&self, inp: usize) -> usize {
-        if inp >= self.src && inp <= self.len {
-            self.dest + inp
-        } else {
-            inp
-        }
-    }
-}
-
 #[derive(Debug)]
 struct SrcDestMap {
     sets: Vec<SrcDestSet>,
@@ -48,25 +35,34 @@ impl SrcDestMap {
     }
 
     fn map(&self, inp: usize) -> usize {
-        dbg!(inp);
         for set in &self.sets {
-            if inp >= set.src && inp <= (set.src+set.len) {
-                return set.dest + ( inp - set.src)
+            if inp >= set.src && inp <= (set.src + set.len - 1) {
+                return set.dest + (inp - set.src);
             }
         }
 
         return inp;
     }
-
 }
-
-struct Almanac {}
 
 fn parse_seeds(input: &str) -> Vec<u32> {
     return input[7..]
         .split(" ")
         .flat_map(|c| c.parse::<u32>())
         .collect_vec();
+}
+
+fn parse_seeds_2(input: &str) -> Vec<u32> {
+    return input[7..]
+        .split(" ")
+        .flat_map(|c| c.parse::<u32>())
+        .tuples()
+        .flat_map(|(start, len)| {
+            let end = &start + &len - 1;
+            (start..end).collect::<Vec<u32>>()
+        })
+        .sorted()
+        .collect::<Vec<u32>>();
 }
 
 fn parse_src_dest_maps(input: &str) -> SrcDestMap {
@@ -89,7 +85,6 @@ fn parse_src_dest_maps(input: &str) -> SrcDestMap {
 }
 
 fn part_1(input: &str) -> u32 {
-    
     let input_parts = input.split("\n\n").collect::<Vec<&str>>();
     let seeds = parse_seeds(input_parts[0]);
 
@@ -108,47 +103,83 @@ fn part_1(input: &str) -> u32 {
         .exactly_one()
         .unwrap();
 
-    dbg!(&seeds);
+    seeds
+        .into_iter()
+        .map(|seed| {
+            //dbg!(&seed);
 
-    dbg!(&seed_to_soil);
-    dbg!(&fertilizer_to_water);
+            let soil = seed_to_soil.map(seed.try_into().unwrap());
+            //dbg!(soil);
+            let fert = soil_to_fertilizer.map(soil);
+            //dbg!(fert);
+            let water = fertilizer_to_water.map(fert);
+            //dbg!(water);
+            let light = water_to_light.map(water);
+            //dbg!(light);
+            let temp = light_to_temperature.map(light);
+            //dbg!(temp);
+            let hum = temperature_to_humidity.map(temp);
+            //dbg!(hum);
+            let loc = humidity_to_location.map(hum);
 
-    let location_numbers = seeds.into_iter().map(|seed| {
+            //dbg!(&loc);
 
-        dbg!(&seed);
-        
-        let soil = seed_to_soil.map(seed.try_into().unwrap());
-        dbg!(soil);
-        let fert = soil_to_fertilizer.map(soil);
-        dbg!(fert);
-        let water = fertilizer_to_water.map(fert);
-        dbg!(water);
-        let light = water_to_light.map(water);
-        dbg!(light);
-        let temp = light_to_temperature.map(light);
-        dbg!(temp);
-        let hum = temperature_to_humidity.map(temp);
-        dbg!(hum);
-        let loc = humidity_to_location.map(hum);
-
-
-        dbg!(&loc);
-        
-        loc as u32
-    }).collect::<Vec<u32>>();
-
-
-    dbg!(&location_numbers);
-
-    //dbg!(&s2s);
-
-    location_numbers.into_iter().min().unwrap()
-
+            loc as u32
+        })
+        .min()
+        .unwrap()
 }
 
-
 fn part_2(input: &str) -> u32 {
-    0
+    let input_parts = input.split("\n\n").collect::<Vec<&str>>();
+    let seeds = parse_seeds_2(input_parts[0]);
+
+    let progress_bar = ProgressBar::new(seeds.len() as u64);
+
+    progress_bar.set_style(
+        ProgressStyle::with_template(
+            "{bar:40.cyan/blue}\n{pos:>7}/{len:7} {elapsed_precise} {percent}%",
+        )
+        .unwrap()
+        .progress_chars("##-"),
+    );
+
+    let (
+        seed_to_soil,
+        soil_to_fertilizer,
+        fertilizer_to_water,
+        water_to_light,
+        light_to_temperature,
+        temperature_to_humidity,
+        humidity_to_location,
+    ) = input_parts[1..]
+        .into_iter()
+        .map(|s| parse_src_dest_maps(s))
+        .tuples()
+        .exactly_one()
+        .unwrap();
+
+    let min = seeds
+        .into_iter()
+        .map(|seed| {
+            let soil = seed_to_soil.map(seed.try_into().unwrap());
+            let fert = soil_to_fertilizer.map(soil);
+            let water = fertilizer_to_water.map(fert);
+            let light = water_to_light.map(water);
+            let temp = light_to_temperature.map(light);
+            let hum = temperature_to_humidity.map(temp);
+            let loc = humidity_to_location.map(hum);
+
+            progress_bar.inc(1);
+
+            loc as u32
+        })
+        .min()
+        .unwrap();
+
+    progress_bar.finish();
+
+    min
 }
 
 #[cfg(test)]
@@ -198,6 +229,6 @@ humidity-to-location map:
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(SAMPLE_DATA), 0);
+        assert_eq!(part_2(SAMPLE_DATA), 46);
     }
 }
