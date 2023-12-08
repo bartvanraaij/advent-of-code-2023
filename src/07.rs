@@ -187,8 +187,10 @@ impl Hand {
             .filter(|j| j.is_joker())
             .collect_vec()
             .len();
-        let joker_combinations = CHARS.into_iter().combinations_with_replacement(num_jokers).collect_vec();
-        dbg!(&joker_combinations);
+        let joker_combinations = CHARS
+            .into_iter()
+            .combinations_with_replacement(num_jokers)
+            .collect_vec();
         let mut joker_indexes: Vec<usize> = Vec::new();
 
         for (pos, card) in cards.iter().enumerate() {
@@ -207,11 +209,8 @@ impl Hand {
                 new_cards = new_cards.update(joker_pos, new_card);
             }
 
-            dbg!(&new_cards);
             let new_type = Hand::get_type_x(&new_cards);
             let new_score = hand_type_strength(&new_type);
-            dbg!(&new_type);
-            dbg!(&new_score);
 
             if new_score > highest_score {
                 highest_score = new_score;
@@ -219,11 +218,7 @@ impl Hand {
             }
         }
 
-        dbg!(&highest_type);
-        dbg!(&highest_score);
-        return highest_type;
-
-        return HandType::HighCard;
+        highest_type
     }
 
     fn strength(&self) -> u32 {
@@ -276,17 +271,12 @@ fn part_1(input: &str) -> u32 {
 
             let hand = Hand::new(cards, bid_amount);
 
-            dbg!(&hand);
-            dbg!(&hand.strength());
-
-            return hand;
+            hand
         })
         .sorted_by(|a, b| match Ord::cmp(&a.strength(), &b.strength()) {
             Equal => {
                 for n in 0..=4 {
                     let cmp = Ord::cmp(&a.cards[n].value, &b.cards[n].value);
-                    dbg!(&a.cards[n].value);
-                    dbg!(&b.cards[n].value);
                     if cmp == Less {
                         return Less;
                     }
@@ -300,11 +290,6 @@ fn part_1(input: &str) -> u32 {
             x => x,
         })
         .enumerate()
-        .inspect(|(i, hand)| {
-            let rank = (*i as u32) + 1;
-            dbg!(&rank);
-            dbg!(&hand);
-        })
         .map(|(i, hand)| {
             let rank = (i as u32) + 1;
             let winning = rank * hand.bid_amount;
@@ -330,18 +315,12 @@ fn part_2(input: &str) -> u32 {
 
             let hand = Hand::new(cards, bid_amount);
 
-            dbg!(&hand);
-            dbg!(&hand.strength());
-            dbg!(&hand.strength_j());
-
-            return hand;
+            hand
         })
         .sorted_by(|a, b| match Ord::cmp(&a.strength_j(), &b.strength_j()) {
             Equal => {
                 for n in 0..=4 {
                     let cmp = Ord::cmp(&a.cards[n].value_j, &b.cards[n].value_j);
-                    dbg!(&a.cards[n].value_j);
-                    dbg!(&b.cards[n].value_j);
                     if cmp == Less {
                         return Less;
                     }
@@ -355,11 +334,6 @@ fn part_2(input: &str) -> u32 {
             x => x,
         })
         .enumerate()
-        .inspect(|(i, hand)| {
-            let rank = (*i as u32) + 1;
-            dbg!(&rank);
-            dbg!(&hand);
-        })
         .map(|(i, hand)| {
             let rank = (i as u32) + 1;
             let winning = rank * hand.bid_amount;
