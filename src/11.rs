@@ -16,12 +16,15 @@ fn main() {
     println!("{:?}", result_part_2);
 }
 
-fn manhattan_distance((ax, ay): (usize, usize), (bx, by): (usize, usize)) -> usize {
+type Pos = (usize, usize);
+type U = usize;
+
+fn manhattan_distance((ax, ay): Pos, (bx, by): Pos) -> usize {
      ax.abs_diff(bx) + ay.abs_diff(by)
 }
 
-fn sum_shortest_paths(input: &str, expansion_multiplier: usize) -> usize {
-    let mut galaxies = input
+fn sum_shortest_paths(input: &str, expansion_multiplier: U) -> usize {
+    let (mut galaxies,all_x,all_y): (Vec<Pos>,Vec<U>,Vec<U>) = input
         .split("\n")
         .filter(|l| !l.is_empty())
         .enumerate()
@@ -30,25 +33,11 @@ fn sum_shortest_paths(input: &str, expansion_multiplier: usize) -> usize {
                 .chars()
                 .enumerate()
                 .filter_map(move |(x, char)| match char {
-                    '#' => Some((x, y)),
+                    '#' => Some(((x,y),x,y)),
                     _ => None,
                 });
         })
-        .collect_vec();
-
-    let all_x = (&galaxies)
-        .into_iter()
-        .map(|(x, _y)| *x)
-        .sorted()
-        .dedup()
-        .collect_vec();
-
-    let all_y = (&galaxies)
-        .into_iter()
-        .map(|(_x, y)| *y)
-        .sorted()
-        .dedup()
-        .collect_vec();
+        .multiunzip();
 
     let width = (&all_x).into_iter().max().unwrap() + 1;
     let height = (&all_y).into_iter().max().unwrap() + 1;
@@ -71,12 +60,12 @@ fn sum_shortest_paths(input: &str, expansion_multiplier: usize) -> usize {
         *y += num_shift_down * (expansion_multiplier - 1);
     }
 
-    let mut distances = 0;
-    for combination in (&galaxies).into_iter().combinations_with_replacement(2) {
-        distances += manhattan_distance(*combination[0], *combination[1]);
+    let mut sum_distances = 0;
+    for combination in (&galaxies).into_iter().combinations(2) {
+        sum_distances += manhattan_distance(*combination[0], *combination[1]);
     }
 
-    distances as usize
+    sum_distances
 }
 
 fn part_1(input: &str) -> usize {
