@@ -20,11 +20,11 @@ type Pos = (usize, usize);
 type U = usize;
 
 fn manhattan_distance((ax, ay): Pos, (bx, by): Pos) -> usize {
-     ax.abs_diff(bx) + ay.abs_diff(by)
+    ax.abs_diff(bx) + ay.abs_diff(by)
 }
 
 fn sum_shortest_paths(input: &str, expansion_multiplier: U) -> usize {
-    let (mut galaxies,all_x,all_y): (Vec<Pos>,Vec<U>,Vec<U>) = input
+    let (mut galaxies, all_x, all_y): (Vec<Pos>, Vec<U>, Vec<U>) = input
         .split("\n")
         .filter(|l| !l.is_empty())
         .enumerate()
@@ -33,7 +33,7 @@ fn sum_shortest_paths(input: &str, expansion_multiplier: U) -> usize {
                 .chars()
                 .enumerate()
                 .filter_map(move |(x, char)| match char {
-                    '#' => Some(((x,y),x,y)),
+                    '#' => Some(((x, y), x, y)),
                     _ => None,
                 });
         })
@@ -60,10 +60,12 @@ fn sum_shortest_paths(input: &str, expansion_multiplier: U) -> usize {
         *y += num_shift_down * (expansion_multiplier - 1);
     }
 
-    let mut sum_distances = 0;
-    for combination in (&galaxies).into_iter().combinations(2) {
-        sum_distances += manhattan_distance(*combination[0], *combination[1]);
-    }
+    let sum_distances = (&galaxies)
+        .into_iter()
+        .combinations(2)
+        .fold(0, |acc, combination| {
+            acc + manhattan_distance(*combination[0], *combination[1])
+        });
 
     sum_distances
 }
