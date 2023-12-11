@@ -34,7 +34,7 @@ fn sum_shortest_paths(input: &str, expansion_multiplier: usize) -> usize {
                     _ => None,
                 });
         })
-        .collect::<Vec<(usize, usize)>>();
+        .collect_vec();
 
     let all_x = (&galaxies)
         .into_iter()
@@ -42,6 +42,7 @@ fn sum_shortest_paths(input: &str, expansion_multiplier: usize) -> usize {
         .sorted()
         .dedup()
         .collect_vec();
+
     let all_y = (&galaxies)
         .into_iter()
         .map(|(_x, y)| *y)
