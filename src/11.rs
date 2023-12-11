@@ -17,9 +17,7 @@ fn main() {
 }
 
 fn manhattan_distance((ax, ay): (usize, usize), (bx, by): (usize, usize)) -> usize {
-    ((ax as i64 - bx as i64).abs() + (ay as i64 - by as i64).abs())
-        .try_into()
-        .unwrap()
+     ax.abs_diff(bx) + ay.abs_diff(by)
 }
 
 fn sum_shortest_paths(input: &str, expansion_multiplier: usize) -> usize {
