@@ -16,42 +16,24 @@ fn main() {
     println!("{:?}", result_part_2);
 }
 
-fn extrapolate_sequence(sequence: Vec<i64>) -> i64 {
+fn extrapolate_sequence(sequence: Vec<i64>) -> (i64,i64) {
     // If all numbers are 0, we are done!
     if (&sequence).into_iter().all(|num| *num == 0) {
-        return 0;
+        return (0,0);
     }
 
     let last_number = (&sequence).last().unwrap();
-
-    let next_sequence = (&sequence)
-        .into_iter()
-        .tuple_windows() // `tuple_windows()` takes the current and next value, puts them in a tuple
-        .map(|(cur, next)| next - cur) // Substract the numbers
-        .collect_vec();
-
-    let next_sequence_extrapolation = extrapolate_sequence(next_sequence);
-
-    *last_number + next_sequence_extrapolation
-}
-
-fn extrapolate_sequence_backwards(sequence: Vec<i64>) -> i64 {
-    // If all numbers are 0, we are done!
-    if (&sequence).into_iter().all(|num| *num == 0) {
-        return 0;
-    }
-
     let first_number = (&sequence).first().unwrap();
 
     let next_sequence = (&sequence)
         .into_iter()
-        .tuple_windows() // `tuple_windows()` takes the current and next value, puts them in a tuple
-        .map(|(cur, next)| next - cur) // Substract the numbers
+        .tuple_windows() // Takes the current and next value, puts them in a tuple
+        .map(|(cur, next)| next - cur) // Substract the current value from the next
         .collect_vec();
 
-    let next_sequence_extrapolation = extrapolate_sequence_backwards(next_sequence);
+    let (next_forward_extrapolation,next_backward_extrapolation) = extrapolate_sequence(next_sequence);
 
-    *first_number - next_sequence_extrapolation
+    (*last_number + next_forward_extrapolation, *first_number - next_backward_extrapolation)
 }
 
 fn parse_input(input: &str) -> Vec<Vec<i64>> {
@@ -70,7 +52,7 @@ fn part_1(input: &str) -> i64 {
     let sequences = parse_input(input);
     let extrapolations: Vec<i64> = sequences
         .into_iter()
-        .map(|s| extrapolate_sequence(s))
+        .map(|s| extrapolate_sequence(s).0)
         .collect();
 
     extrapolations.into_iter().sum()
@@ -80,7 +62,7 @@ fn part_2(input: &str) -> i64 {
     let sequences = parse_input(input);
     let extrapolations: Vec<i64> = sequences
         .into_iter()
-        .map(|s| extrapolate_sequence_backwards(s))
+        .map(|s| extrapolate_sequence(s).1)
         .collect();
 
     extrapolations.into_iter().sum()
