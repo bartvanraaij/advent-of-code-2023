@@ -35,6 +35,25 @@ fn extrapolate_sequence(sequence: Vec<i64>) -> i64 {
     *last_number + next_sequence_extrapolation
 }
 
+fn extrapolate_sequence_backwards(sequence: Vec<i64>) -> i64 {
+    // If all numbers are 0, we are done!
+    if (&sequence).into_iter().all(|num| *num == 0) {
+        return 0;
+    }
+
+    let first_number = (&sequence).first().unwrap();
+
+    let next_sequence = (&sequence)
+        .into_iter()
+        .tuple_windows() // `tuple_windows()` takes the current and next value, puts them in a tuple
+        .map(|(cur, next)| next - cur) // Substract the numbers
+        .collect_vec();
+
+    let next_sequence_extrapolation = extrapolate_sequence_backwards(next_sequence);
+
+    *first_number - next_sequence_extrapolation
+}
+
 fn parse_input(input: &str) -> Vec<Vec<i64>> {
     input
         .split("\n")
@@ -58,7 +77,13 @@ fn part_1(input: &str) -> i64 {
 }
 
 fn part_2(input: &str) -> i64 {
-    return 0;
+    let sequences = parse_input(input);
+    let extrapolations: Vec<i64> = sequences
+        .into_iter()
+        .map(|s| extrapolate_sequence_backwards(s))
+        .collect();
+
+    extrapolations.into_iter().sum()
 }
 
 #[cfg(test)]
@@ -83,6 +108,6 @@ mod tests_00 {
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(SAMPLE_DATA), 0);
+        assert_eq!(part_2(SAMPLE_DATA), 2);
     }
 }
