@@ -18,19 +18,32 @@ fn main() {
     println!("{:?}", result_part_2);
 }
 
+fn part_1(input: &str) -> usize {
+    input
+        .split("\n")
+        .filter(|l| !l.is_empty())
+        .map(|line| determine_number_of_arrangements(line, 1))
+        .sum()
+}
+
+fn part_2(input: &str) -> usize {
+    input
+        .split("\n")
+        .filter(|l| !l.is_empty())
+        .map(|line| determine_number_of_arrangements(line, 5))
+        .sum()
+}
+
 fn cache_key(row: &str, config: &Vec<usize>) -> String {
     format!("{}x{}x", row, config.into_iter().join("_"))
 }
 
 #[cached(
-    type = "UnboundCache<String, i64>",
+    type = "UnboundCache<String, usize>",
     create = "{ UnboundCache::new() }",
     convert = r#"{ cache_key(row,config) }"#
 )]
-fn number_of_arrangements(
-    row: &str,
-    config: &Vec<usize>,
-) -> i64 {
+fn number_of_arrangements(row: &str, config: &Vec<usize>) -> usize {
     let chars = row.chars().collect_vec();
 
     if row.starts_with(".") {
@@ -38,10 +51,13 @@ fn number_of_arrangements(
         return number_of_arrangements(&row_next_part, &config);
     }
 
+    // The row is empty
     if chars.len() == 0 {
+        // And the config too, yay! Possible
         if config.len() == 0 {
             return 1;
         } else {
+            // Nope, that's not good.
             return 0;
         }
     }
@@ -83,33 +99,33 @@ fn number_of_arrangements(
 
         if chars.len() == num_disabled_springs {
             if config.len() == 1 {
-                // This is the last group
+                // This is the last group, possible!
                 return 1;
             } else {
+                // There is another config number, this is not possible
                 return 0;
             }
         }
 
         // This config part looks good, move on to the next:
-        let row_next_part = String::from_iter(&chars[(num_disabled_springs+1)..]);
+        let row_next_part = String::from_iter(&chars[(num_disabled_springs + 1)..]);
         return number_of_arrangements(&row_next_part, &config[1..].to_vec());
     }
     // The row starts with an unknown spring (?)
     else {
-        // Replace the first spot it with a working spring, and recursively check the rest:
+        // Replace the first spot with a working spring, and recursively check the rest:
         let row_with_working = String::from_iter(&chars[1..]);
-        let num_arrangements_when_working =
-            number_of_arrangements(&row_with_working, &config);
+        let num_arrangements_when_working = number_of_arrangements(&row_with_working, &config);
 
+        // Replace the first spot with a disabled spring, and recursively check the rest:
         let row_with_disabled = format!("{}{}", "#", String::from_iter(&chars[1..]));
-        let num_arrangements_when_disabled =
-            number_of_arrangements(&row_with_disabled, &config);
+        let num_arrangements_when_disabled = number_of_arrangements(&row_with_disabled, &config);
 
         return num_arrangements_when_working + num_arrangements_when_disabled;
     }
 }
 
-fn determine_number_of_arrangements(line: &str, unfold: usize) -> i64 {
+fn determine_number_of_arrangements(line: &str, unfold: usize) -> usize {
     let (row_str_raw, config_str_raw) = line.split_once(" ").unwrap();
 
     let row_str_vec = vec![row_str_raw; unfold];
@@ -119,26 +135,10 @@ fn determine_number_of_arrangements(line: &str, unfold: usize) -> i64 {
     let config_str = config_str_vec.join(",");
     let config = config_str
         .split(',')
-        .map(|c| c.parse::<usize>().unwrap())
+        .map(|c| c.parse().unwrap())
         .collect_vec();
 
     number_of_arrangements(&row, &config)
-}
-
-fn part_1(input: &str) -> i64 {
-    input
-        .split("\n")
-        .filter(|l| !l.is_empty())
-        .map(|line| determine_number_of_arrangements(line, 1))
-        .sum()
-}
-
-fn part_2(input: &str) -> i64 {
-    input
-        .split("\n")
-        .filter(|l| !l.is_empty())
-        .map(|line| determine_number_of_arrangements(line, 5))
-        .sum()
 }
 
 #[cfg(test)]
