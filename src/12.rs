@@ -1,3 +1,5 @@
+use cached::proc_macro::cached;
+use cached::UnboundCache;
 use itertools::Itertools;
 use std::{env, fs};
 
@@ -16,11 +18,25 @@ fn main() {
     println!("{:?}", result_part_2);
 }
 
-fn number_of_arrangements(row_str: &str, config: Vec<usize>) -> u32 {
-    // Remove leading working springs (.), we don't care about those
-    let row = row_str.trim_start_matches(".");
+fn cache_key(row: &str, config: &Vec<usize>) -> String {
+    format!("{}x{}x", row, config.into_iter().join("_"))
+}
 
+#[cached(
+    type = "UnboundCache<String, i64>",
+    create = "{ UnboundCache::new() }",
+    convert = r#"{ cache_key(row,config) }"#
+)]
+fn number_of_arrangements(
+    row: &str,
+    config: &Vec<usize>,
+) -> i64 {
     let chars = row.chars().collect_vec();
+
+    if row.starts_with(".") {
+        let row_next_part = String::from_iter(&chars[1..]);
+        return number_of_arrangements(&row_next_part, &config);
+    }
 
     if chars.len() == 0 {
         if config.len() == 0 {
@@ -54,7 +70,7 @@ fn number_of_arrangements(row_str: &str, config: Vec<usize>) -> u32 {
         if chars[..num_disabled_springs].contains(&'.') {
             return 0;
         }
-        
+
         // Only one disabled spring left, but the config prescribes differently, not possible:
         if chars.len() == 1 && num_disabled_springs != 1 {
             return 0;
@@ -70,57 +86,59 @@ fn number_of_arrangements(row_str: &str, config: Vec<usize>) -> u32 {
                 // This is the last group
                 return 1;
             } else {
-                 return 0;
+                return 0;
             }
         }
 
         // This config part looks good, move on to the next:
-        let newpart = num_disabled_springs + 1;
-        let new_row = String::from_iter(&chars[newpart..]);
-
-        let newconf = config.clone()[1..].to_vec();
-
-        return number_of_arrangements(&new_row, newconf);
+        let row_next_part = String::from_iter(&chars[(num_disabled_springs+1)..]);
+        return number_of_arrangements(&row_next_part, &config[1..].to_vec());
     }
     // The row starts with an unknown spring (?)
     else {
         // Replace the first spot it with a working spring, and recursively check the rest:
-        let row_with_working = format!("{}{}",".", String::from_iter(&chars[1..]));
-        //let row_with_working = String::from_iter(&chars[1..]);
+        let row_with_working = String::from_iter(&chars[1..]);
         let num_arrangements_when_working =
-            number_of_arrangements(&row_with_working, config.clone());
+            number_of_arrangements(&row_with_working, &config);
 
         let row_with_disabled = format!("{}{}", "#", String::from_iter(&chars[1..]));
         let num_arrangements_when_disabled =
-            number_of_arrangements(&row_with_disabled, config.clone());
+            number_of_arrangements(&row_with_disabled, &config);
 
         return num_arrangements_when_working + num_arrangements_when_disabled;
     }
 }
 
-fn determine_number_of_arrangements(line: &str) -> u32 {
-    let (row, config_str) = line.split_once(" ").unwrap();
+fn determine_number_of_arrangements(line: &str, unfold: usize) -> i64 {
+    let (row_str_raw, config_str_raw) = line.split_once(" ").unwrap();
 
+    let row_str_vec = vec![row_str_raw; unfold];
+    let config_str_vec = vec![config_str_raw; unfold];
+
+    let row = row_str_vec.join("&");
+    let config_str = config_str_vec.join(",");
     let config = config_str
         .split(',')
         .map(|c| c.parse::<usize>().unwrap())
         .collect_vec();
 
-    number_of_arrangements(row, config)
+    number_of_arrangements(&row, &config)
 }
 
-fn part_1(input: &str) -> u32 {
-    let num_arrangements = input
+fn part_1(input: &str) -> i64 {
+    input
         .split("\n")
         .filter(|l| !l.is_empty())
-        .map(|line| determine_number_of_arrangements(line))
-        .collect_vec();
-
-    num_arrangements.into_iter().sum()
+        .map(|line| determine_number_of_arrangements(line, 1))
+        .sum()
 }
 
-fn part_2(input: &str) -> u32 {
-    0
+fn part_2(input: &str) -> i64 {
+    input
+        .split("\n")
+        .filter(|l| !l.is_empty())
+        .map(|line| determine_number_of_arrangements(line, 5))
+        .sum()
 }
 
 #[cfg(test)]
@@ -138,36 +156,61 @@ mod tests_12 {
 
     #[test]
     fn test_num_arrangements() {
-        
-        assert_eq!(determine_number_of_arrangements("???.### 1,1,3"), 1);
-
-        assert_eq!(determine_number_of_arrangements(".??..??...?##. 1,1,3"), 4);
-
+        assert_eq!(determine_number_of_arrangements("???.### 1,1,3", 1), 1);
         assert_eq!(
-            determine_number_of_arrangements("?#?#?#?#?#?#?#? 1,3,1,6"),
-            1
-        );
-
-        assert_eq!(determine_number_of_arrangements("????.#...#... 4,1,1"), 1);
-        assert_eq!(
-            determine_number_of_arrangements("????.######..#####. 1,6,5"),
+            determine_number_of_arrangements(".??..??...?##. 1,1,3", 1),
             4
         );
-        
-        
-        assert_eq!(determine_number_of_arrangements("?###???????? 3,2,1"), 10);
+        assert_eq!(
+            determine_number_of_arrangements("?#?#?#?#?#?#?#? 1,3,1,6", 1),
+            1
+        );
+        assert_eq!(
+            determine_number_of_arrangements("????.#...#... 4,1,1", 1),
+            1
+        );
+        assert_eq!(
+            determine_number_of_arrangements("????.######..#####. 1,6,5", 1),
+            4
+        );
+        assert_eq!(
+            determine_number_of_arrangements("?###???????? 3,2,1", 1),
+            10
+        );
     }
-    
-        #[test]
-        fn test_part_1() {
-            assert_eq!(part_1(SAMPLE_DATA), 21);
-        }
 
-        /*
-    
-        #[test]
-        fn test_part_2() {
-            assert_eq!(part_2(SAMPLE_DATA), 0);
-        }
-    */
+    #[test]
+    fn test_num_arrangements_unfolded() {
+        assert_eq!(determine_number_of_arrangements("???.### 1,1,3", 5), 1);
+        assert_eq!(
+            determine_number_of_arrangements(".??..??...?##. 1,1,3", 5),
+            16384
+        );
+        assert_eq!(
+            determine_number_of_arrangements("?#?#?#?#?#?#?#? 1,3,1,6", 5),
+            1
+        );
+        assert_eq!(
+            determine_number_of_arrangements("????.#...#... 4,1,1", 5),
+            16
+        );
+        assert_eq!(
+            determine_number_of_arrangements("????.######..#####. 1,6,5", 5),
+            2500
+        );
+        assert_eq!(
+            determine_number_of_arrangements("?###???????? 3,2,1", 5),
+            506250
+        );
+    }
+
+    #[test]
+    fn test_part_1() {
+        assert_eq!(part_1(SAMPLE_DATA), 21);
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert_eq!(part_2(SAMPLE_DATA), 525152);
+    }
 }

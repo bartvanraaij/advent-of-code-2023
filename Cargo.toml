@@ -50,6 +50,7 @@ name = "12"
 path = "src/12.rs"
 
 [dependencies]
+cached = "0.46.1"
 im = "15.1.0"
 indicatif = "0.17.7"
 itertools = "0.12.0"
