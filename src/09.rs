@@ -62,7 +62,7 @@ fn both_parts(input: &str) -> (i64, i64) {
 }
 
 #[cfg(test)]
-mod tests_00 {
+mod tests_09 {
     use super::*;
 
     const SAMPLE_DATA: &str = r#"
