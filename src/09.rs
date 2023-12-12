@@ -9,17 +9,16 @@ fn read_input_file(args: Vec<String>) -> String {
 
 fn main() {
     let input = read_input_file(env::args().collect());
-    let result_part_1 = part_1(&input);
-    println!("{:?}", result_part_1);
+    let (result_part_1, result_part_2) = both_parts(&input);
 
-    let result_part_2 = part_2(&input);
+    println!("{:?}", result_part_1);
     println!("{:?}", result_part_2);
 }
 
-fn extrapolate_sequence(sequence: Vec<i64>) -> (i64,i64) {
+fn extrapolate_sequence(sequence: Vec<i64>) -> (i64, i64) {
     // If all numbers are 0, we are done!
     if (&sequence).into_iter().all(|num| *num == 0) {
-        return (0,0);
+        return (0, 0);
     }
 
     let last_number = (&sequence).last().unwrap();
@@ -31,9 +30,13 @@ fn extrapolate_sequence(sequence: Vec<i64>) -> (i64,i64) {
         .map(|(cur, next)| next - cur) // Substract the current value from the next
         .collect_vec();
 
-    let (next_forward_extrapolation,next_backward_extrapolation) = extrapolate_sequence(next_sequence);
+    let (next_forward_extrapolation, next_backward_extrapolation) =
+        extrapolate_sequence(next_sequence);
 
-    (*last_number + next_forward_extrapolation, *first_number - next_backward_extrapolation)
+    (
+        *last_number + next_forward_extrapolation,
+        *first_number - next_backward_extrapolation,
+    )
 }
 
 fn parse_input(input: &str) -> Vec<Vec<i64>> {
@@ -48,24 +51,14 @@ fn parse_input(input: &str) -> Vec<Vec<i64>> {
         .collect_vec()
 }
 
-fn part_1(input: &str) -> i64 {
+fn both_parts(input: &str) -> (i64, i64) {
     let sequences = parse_input(input);
-    let extrapolations: Vec<i64> = sequences
+    let extrapolation_sums: (i64, i64) = sequences
         .into_iter()
-        .map(|s| extrapolate_sequence(s).0)
-        .collect();
+        .map(|s| extrapolate_sequence(s))
+        .fold((0, 0), |acc, curr| (acc.0 + curr.0, acc.1 + curr.1));
 
-    extrapolations.into_iter().sum()
-}
-
-fn part_2(input: &str) -> i64 {
-    let sequences = parse_input(input);
-    let extrapolations: Vec<i64> = sequences
-        .into_iter()
-        .map(|s| extrapolate_sequence(s).1)
-        .collect();
-
-    extrapolations.into_iter().sum()
+    extrapolation_sums
 }
 
 #[cfg(test)]
@@ -80,16 +73,11 @@ mod tests_00 {
 
     #[test]
     fn test_part_1() {
-        assert_eq!(part_1(SAMPLE_DATA), 114);
-    }
-
-    #[test]
-    fn test_single() {
-        assert_eq!(part_1("0 3 6 9 12 15"), 18);
+        assert_eq!(both_parts(SAMPLE_DATA).0, 114);
     }
 
     #[test]
     fn test_part_2() {
-        assert_eq!(part_2(SAMPLE_DATA), 2);
+        assert_eq!(both_parts(SAMPLE_DATA).1, 2);
     }
 }
