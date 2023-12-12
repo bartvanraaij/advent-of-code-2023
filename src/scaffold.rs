@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::{env, fs};
 
 fn read_input_file(args: Vec<String>) -> String {
@@ -16,6 +17,8 @@ fn main() {
 }
 
 fn part_1(input: &str) -> u32 {
+    //input.split("\n").filter(|l| !l.is_empty()).map(|line| {});
+
     0
 }
 
