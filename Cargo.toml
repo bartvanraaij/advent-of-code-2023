@@ -45,6 +45,10 @@ path = "src/09.rs"
 name = "11"
 path = "src/11.rs"
 
+[[bin]]
+name = "12"
+path = "src/12.rs"
+
 [dependencies]
 im = "15.1.0"
 indicatif = "0.17.7"
