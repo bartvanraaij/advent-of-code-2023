@@ -20,15 +20,10 @@ fn number_of_arrangements(row_str: &str, config: Vec<usize>) -> u32 {
     // Remove leading working springs (.), we don't care about those
     let row = row_str.trim_start_matches(".");
 
-    //dbg!(&row);
-    //dbg!(&config);
     let chars = row.chars().collect_vec();
-
-    //dbg!(&chars);
 
     if chars.len() == 0 {
         if config.len() == 0 {
-            dbg!("yes");
             return 1;
         } else {
             return 0;
@@ -41,7 +36,6 @@ fn number_of_arrangements(row_str: &str, config: Vec<usize>) -> u32 {
             return 0;
         } else {
             // Only unknown or working springs remaining, possible!
-            dbg!("here");
             return 1;
         }
     }
@@ -79,23 +73,12 @@ fn number_of_arrangements(row_str: &str, config: Vec<usize>) -> u32 {
                  return 0;
             }
         }
-        /*
-        if chars.len() == num_disabled_springs && !chars.contains(&'.') {
-            // The remaining spots are all disabled or unknown, this works
-            dbg!("blabla");
-            dbg!(&chars);
-            dbg!(&num_disabled_springs);
-            return 1;
-        }*/
-
 
         // This config part looks good, move on to the next:
         let newpart = num_disabled_springs + 1;
         let new_row = String::from_iter(&chars[newpart..]);
 
         let newconf = config.clone()[1..].to_vec();
-        dbg!(&newconf);
-        dbg!(&new_row);
 
         return number_of_arrangements(&new_row, newconf);
     }
@@ -123,27 +106,7 @@ fn determine_number_of_arrangements(line: &str) -> u32 {
         .map(|c| c.parse::<usize>().unwrap())
         .collect_vec();
 
-    let x = number_of_arrangements(row, config.clone());
-
-    dbg!(&row);
-    dbg!(&config);
-    dbg!(x);
-    /*
-    let (groups, config) = line.split(" ").tuples().map(|(grid_str, config_str)| {
-        let spring_groups = grid_str.split(".").filter(|s| ! s.is_empty()).collect_vec();
-        let spring_config = config_str
-        .split(",")
-        .map(|c| c.parse::<u32>().unwrap())
-        .collect_vec();
-
-        (spring_groups, spring_config)
-    }).exactly_one().unwrap();
-
-    dbg!(&groups);
-    dbg!(&config);
-    */
-
-    x
+    number_of_arrangements(row, config)
 }
 
 fn part_1(input: &str) -> u32 {
@@ -152,8 +115,6 @@ fn part_1(input: &str) -> u32 {
         .filter(|l| !l.is_empty())
         .map(|line| determine_number_of_arrangements(line))
         .collect_vec();
-
-    dbg!(&num_arrangements);
 
     num_arrangements.into_iter().sum()
 }
