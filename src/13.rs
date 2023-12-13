@@ -180,14 +180,12 @@ impl Pattern {
             None => (None, None),
         };
 
-        match self.find_reflection_position(skip_y) {
-            Some(y) => Some(ReflectionResult::new(y, ReflectionOrientation::H)),
-            None => {
-                match self.rotated().find_reflection_position(skip_x) {
-                    Some(x) => Some(ReflectionResult::new(x, ReflectionOrientation::V)),
-                    None => None,
-                }
-            }
+        if let Some(y) = self.find_reflection_position(skip_y) {
+            return Some(ReflectionResult::new(y, ReflectionOrientation::H));
+        } else if let Some(x) = self.rotated().find_reflection_position(skip_x) {
+            return Some(ReflectionResult::new(x, ReflectionOrientation::V));
+        } else {
+            return None;
         }
     }
 }
