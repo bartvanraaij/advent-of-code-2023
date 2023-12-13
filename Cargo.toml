@@ -49,6 +49,10 @@ path = "src/11.rs"
 name = "12"
 path = "src/12.rs"
 
+[[bin]]
+name = "13"
+path = "src/13.rs"
+
 [dependencies]
 cached = "0.46.1"
 im = "15.1.0"
