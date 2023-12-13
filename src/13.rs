@@ -183,8 +183,7 @@ impl Pattern {
         match self.find_reflection_position(skip_y) {
             Some(y) => Some(ReflectionResult::new(y, ReflectionOrientation::H)),
             None => {
-                let rotated = self.rotated();
-                match rotated.find_reflection_position(skip_x) {
+                match self.rotated().find_reflection_position(skip_x) {
                     Some(x) => Some(ReflectionResult::new(x, ReflectionOrientation::V)),
                     None => None,
                 }
