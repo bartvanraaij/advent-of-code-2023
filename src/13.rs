@@ -27,10 +27,10 @@ fn part_1(input: &str) -> usize {
 fn part_2(input: &str) -> usize {
     input
         .split("\n\n")
-        .map(|pattern| {
-            let patlines = pattern.split("\n").filter(|l| !l.is_empty()).collect_vec();
-            let pattern_width = patlines[0].len();
-            let pattern_height = patlines.len();
+        .filter_map(|pattern| {
+            let pattern_lines = pattern.split("\n").filter(|l| !l.is_empty()).collect_vec();
+            let pattern_width = pattern_lines[0].len();
+            let pattern_height = pattern_lines.len();
 
             let orig_pattern_result = Some(pattern_result(pattern, &None).unwrap());
 
@@ -39,13 +39,13 @@ fn part_2(input: &str) -> usize {
                     let changed_pattern = flip_char_at(pattern, (x, y));
 
                     match pattern_result(&*changed_pattern, &orig_pattern_result) {
-                        Some(new_result) => return new_result,
+                        Some(new_result) => return Some(new_result),
                         None => {}
                     };
                 }
             }
 
-            panic!("No result");
+            None
         })
         .map(|r| r.score())
         .sum()
@@ -55,11 +55,12 @@ fn find_reflection_position(pattern: &str, skip_if: usize) -> usize {
     let mut last_line = "";
     let lines = pattern.split("\n").filter(|l| !l.is_empty()).collect_vec();
     'outer: for (y, line) in lines.iter().enumerate() {
+        if y == skip_if {
+            last_line = line;
+            continue;
+        }
+
         if line == &last_line {
-            if y == skip_if {
-                last_line = line;
-                continue 'outer;
-            }
             for i in 0..(y - 1) {
                 if (y + i + 1) >= lines.len() {
                     break;
@@ -72,6 +73,7 @@ fn find_reflection_position(pattern: &str, skip_if: usize) -> usize {
             }
             return y;
         }
+
         last_line = line;
     }
 
